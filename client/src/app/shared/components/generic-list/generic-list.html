@@ -1,1 +1,18 @@
-<p>generic-list works!</p>
+@if (!elements){
+
+<div #loading><ng-content select="[loading]"></ng-content></div>
+
+@if (!loading.innerHTML.trim()){
+<div>
+  <img src="loading.gif" />
+</div>
+} } @else if (elements.length === 0){
+<div #empty><ng-content select="[empty]"></ng-content></div>
+
+@if (!empty.innerHTML.trim()){
+<div>
+  <p>There are no elements to display</p>
+</div>
+} } @else {
+<ng-content select="[content]"></ng-content>
+}
