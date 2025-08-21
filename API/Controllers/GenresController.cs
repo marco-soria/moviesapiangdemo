@@ -1,127 +1,70 @@
-using Microsoft.AspNetCore.OutputCaching;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.EntityFrameworkCore;
+using API.DTOs;
 using API.Entities;
+using API.Utilities;
+
 
 namespace API.Controllers
 {
-     [Route("api/genres")]
+      [Route("api/genres")]
     [ApiController]
-    public class GenresController: ControllerBase
+    public class GenresController: CustomBaseController
     {
-        private readonly IRepository repository;
-        private readonly TransientService transient1;
-        private readonly TransientService transient2;
-        private readonly ScopedService scoped1;
-        private readonly ScopedService scoped2;
-        private readonly SingletonService singleton;
         private readonly IOutputCacheStore outputCacheStore;
-        private readonly IConfiguration configuration;
+        private readonly ApplicationDbContext context;
+        private readonly IMapper mapper;
         private const string cacheTag = "genres";
 
-        public GenresController(IRepository repository, TransientService transient1,
-            TransientService transient2, ScopedService scoped1, ScopedService scoped2,
-            SingletonService singleton, IOutputCacheStore outputCacheStore, IConfiguration configuration)
+        public GenresController(IOutputCacheStore outputCacheStore, ApplicationDbContext context,
+            IMapper mapper)
+            :base(context, mapper, outputCacheStore, cacheTag)
         {
-            this.repository = repository;
-            this.transient1 = transient1;
-            this.transient2 = transient2;
-            this.scoped1 = scoped1;
-            this.scoped2 = scoped2;
-            this.singleton = singleton;
             this.outputCacheStore = outputCacheStore;
-            this.configuration = configuration;
+            this.context = context;
+            this.mapper = mapper;
         }
 
-        [HttpGet("get-connection-string")]
-        public IActionResult GetConnectionString()
-        {
-            var connectionString = configuration.GetValue<string>("myConnectionString");
-            return Ok(connectionString);
-        }
-
-        [HttpGet("lifecycle-services")]
-        public IActionResult GetLifecycleServices()
-        {
-            return Ok(new
-            {
-                Transients = new
-                {
-                    transient1 = transient1.GetId(),
-                    transient2 = transient2.GetId()
-                },
-               Scopeds = new
-               {
-                   scoped1 = scoped1.GetId(),
-                   scoped2 = scoped2.GetId()
-               },
-               Singleton = new
-               {
-                   singleton = singleton.GetId()
-               }
-            });
-        }
-
-        [HttpGet("all-genres")] // api/genres/all-genres
         [HttpGet] // api/genres
-        [HttpGet("/all-of-the-genres")] // /all-of-the-genres
         [OutputCache(Tags = [cacheTag])]
-        public List<Genre> Get()
+        public async Task<List<GenreDTO>> Get([FromQuery] PaginationDTO pagination)
         {
-            var genres = repository.GetAllGenres();
-            
-            return genres;
+            return await Get<Genre, GenreDTO>(pagination, orderBy: g => g.Name);
         }
 
-        [HttpGet("{id:int}")] // api/genres/500
+        [HttpGet("all")]
         [OutputCache(Tags = [cacheTag])]
-        public async Task<ActionResult<Genre>> Get(int id)
+        public async Task<List<GenreDTO>> Get()
         {
-            var genre =  await repository.GetById(id);
-
-            if (genre is null)
-            {
-                return NotFound();
-            }
-
-            return genre;
+            return await Get<Genre, GenreDTO>(orderBy: g => g.Name);
         }
 
-        // api/genres/comedy?id=7
+        [HttpGet("{id:int}", Name = "GetGenreById")] // api/genres/500
         [OutputCache(Tags = [cacheTag])]
-        public async Task<ActionResult<Genre>> Get(string name, [FromQuery] int id)
+        public async Task<ActionResult<GenreDTO>> Get(int id)
         {
-            // Assuming you want to simulate async work, e.g., fetching from a database
-            await Task.Yield(); // or await Task.CompletedTask; if no real async work is needed
-
-            return new Genre { Id = id, Name = name };
+            return await Get<Genre, GenreDTO>(id);
         }
-           
 
         [HttpPost]
-        public async Task<ActionResult<Genre>> Post([FromBody] Genre genre)
+        public async Task<CreatedAtRouteResult> Post([FromBody] GenreCreationDTO genreCreationDTO)
         {
-            var genreWithSameNameExists = repository.Exists(genre.Name);
-
-            if (genreWithSameNameExists)
-            {
-                return BadRequest($"There's already a genre with the name {genre.Name}");
-            }
-
-            repository.Create(genre);
-            await outputCacheStore.EvictByTagAsync(cacheTag, default);
-            return genre;
+            return await Post<GenreCreationDTO, Genre, GenreDTO>(genreCreationDTO, routeName: "GetGenreById");
         }
 
-        [HttpPut]
-        public void Put()
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Put(int id, [FromBody] GenreCreationDTO genreCreationDTO)
         {
-
+            return await Put<GenreCreationDTO, Genre>(id, genreCreationDTO);
         }
 
-        [HttpDelete]
-        public void Delete()
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
         {
-
+            return await Delete<Genre>(id);
         }
     }
 }

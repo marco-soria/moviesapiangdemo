@@ -1,4 +1,10 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using API;
+using API.Services;
+using API.Utilities;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,20 +18,51 @@ builder.Services.AddOutputCache(options =>
 {
     options.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(60);
 });
-builder.Services.AddSingleton<IRepository, InMemoryRepository>();
 
-builder.Services.AddTransient<TransientService>();
-builder.Services.AddScoped<ScopedService>();
-builder.Services.AddSingleton<SingletonService>();
+var allowedOrigins = builder.Configuration.GetValue<string>("AllowedOrigins")!.Split(",");
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader()
+        .WithExposedHeaders("total-records-count");
+    });
+});
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("name=DefaultConnection",
+    sqlServer => sqlServer.UseNetTopologySuite()));
+
+builder.Services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
+
+builder.Services.AddAutoMapper(config =>
+{
+    config.ConstructServicesUsing(type =>
+    {
+        if (type == typeof(GeometryFactory))
+        {
+            return NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+        }
+        return Activator.CreateInstance(type);
+    });
+}, typeof(AutoMapperProfiles));
+
+builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger(); 
+app.UseSwaggerUI();
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseCors();
 
 app.UseOutputCache();
 

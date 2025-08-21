@@ -1,15 +1,12 @@
-using System.ComponentModel.DataAnnotations;
 using API.Validations;
-using API.DTOs;
+using System.ComponentModel.DataAnnotations;
 
-namespace API.Entities;
+namespace API.DTOs;
 
-public class Genre : IId
-{
-    public int Id { get; set; }
+public class GenreCreationDTO
+    {
         [Required(ErrorMessage = "You must fill the {0} field")]
         [StringLength(maximumLength: 50)]
         [FirstLetterUppercase]
         public required string Name { get; set; }
-
-}
+    }
