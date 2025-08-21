@@ -8,15 +8,13 @@ import { IndexGenres } from './genres/index-genres/index-genres';
 import { LandingPage } from './landing-page/landing-page';
 import { CreateMovie } from './movies/create-movie/create-movie';
 import { EditMovie } from './movies/edit-movie/edit-movie';
+import { MoviesSearch } from './movies/movies-search/movies-search';
 import { CreateTheater } from './theaters/create-theater/create-theater';
 import { EditTheater } from './theaters/edit-theater/edit-theater';
 import { IndexTheaters } from './theaters/index-theaters/index-theaters';
 
 export const routes: Routes = [
-  {
-    path: '',
-    component: LandingPage,
-  },
+  { path: '', component: LandingPage },
   { path: 'genres', component: IndexGenres },
   { path: 'genres/create', component: CreateGenre },
   { path: 'genres/edit/:id', component: EditGenre },
@@ -29,6 +27,7 @@ export const routes: Routes = [
   { path: 'theaters/create', component: CreateTheater },
   { path: 'theaters/edit/:id', component: EditTheater },
 
+  { path: 'movies/search', component: MoviesSearch },
   { path: 'movies/create', component: CreateMovie },
   { path: 'movies/edit/:id', component: EditMovie },
   { path: '**', redirectTo: '' },
