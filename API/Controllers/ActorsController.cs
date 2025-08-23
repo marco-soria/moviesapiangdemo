@@ -7,11 +7,14 @@ using API.DTOs;
 using API.Entities;
 using API.Services;
 using API.Utilities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
     [Route("api/actors")]
     [ApiController]
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isadmin")]
     public class ActorsController: CustomBaseController
     {
         private readonly ApplicationDbContext context;

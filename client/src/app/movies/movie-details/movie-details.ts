@@ -8,15 +8,18 @@ import {
 import { MatChipsModule } from '@angular/material/chips';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
+import Swal from 'sweetalert2';
+import { RatingService } from '../../rating/rating.service';
 import { Loading } from '../../shared/components/loading/loading';
 import { Coordinate } from '../../shared/components/map/Coordinate.model';
 import { Map } from '../../shared/components/map/map';
+import { Rating } from '../../shared/components/rating/rating';
 import { MovieDTO } from '../movies.models';
 import { MoviesService } from '../movies.service';
 
 @Component({
   selector: 'app-movie-details',
-  imports: [Loading, MatChipsModule, RouterLink, Map],
+  imports: [Loading, MatChipsModule, RouterLink, Map, Rating],
   templateUrl: './movie-details.html',
   styleUrl: './movie-details.css',
 })
@@ -27,6 +30,7 @@ export class MovieDetails implements OnInit {
   trailerURL!: SafeResourceUrl;
   sanitizer = inject(DomSanitizer);
   moviesService = inject(MoviesService);
+  ratingService = inject(RatingService);
   coordinates: Coordinate[] = [];
 
   ngOnInit(): void {
@@ -62,5 +66,11 @@ export class MovieDetails implements OnInit {
     return this.sanitizer.bypassSecurityTrustResourceUrl(
       `https://www.youtube.com/embed/${videoId}`
     );
+  }
+
+  rate(rate: number) {
+    this.ratingService.rate(this.id, rate).subscribe(() => {
+      Swal.fire('Successful', 'You rate has been received', 'success');
+    });
   }
 }

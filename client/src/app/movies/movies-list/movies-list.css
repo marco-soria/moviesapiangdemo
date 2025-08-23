@@ -19,6 +19,10 @@ button {
   margin-left: 1rem;
 }
 
+a {
+  text-decoration: none;
+}
+
 /* .primary {
   background-color: var(--primary-color);
 }

@@ -14,17 +14,23 @@
         <p>
           <a [routerLink]="['/movie', movie.id]">{{ movie.title }}</a>
         </p>
-        <div>
-          <a mat-flat-button [routerLink]="['movies/edit', movie.id]"> Edit </a>
-          <button
-            mat-flat-button
-            type="button"
-            color="warn"
-            (click)="confirmDelete(movie.id)"
-          >
-            Delete
-          </button>
-        </div>
+        <app-authorized role="admin">
+          <ng-container authorized>
+            <div>
+              <a mat-flat-button [routerLink]="['movies/edit', movie.id]">
+                Edit
+              </a>
+              <button
+                mat-flat-button
+                type="button"
+                class="warn"
+                (click)="confirmDelete(movie.id)"
+              >
+                Delete
+              </button>
+            </div>
+          </ng-container>
+        </app-authorized>
       </div>
       }
     </div>

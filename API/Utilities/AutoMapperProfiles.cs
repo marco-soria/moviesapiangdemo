@@ -2,6 +2,7 @@ using AutoMapper;
 using API.DTOs;
 using API.Entities;
 using NetTopologySuite.Geometries;
+using Microsoft.AspNetCore.Identity;
 
 namespace API.Utilities;
 
@@ -13,6 +14,12 @@ public class AutoMapperProfiles: Profile
             ConfigureActors();
             ConfigureTheaters(geometryFactory);
             ConfigureMovies();
+            ConfigureUsers();
+        }
+
+        private void ConfigureUsers()
+        {
+            CreateMap<IdentityUser, UserDTO>();
         }
 
         private void ConfigureMovies()

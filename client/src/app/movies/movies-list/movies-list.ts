@@ -3,11 +3,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
+import { Authorized } from '../../security/authorized/authorized';
 import { GenericList } from '../../shared/components/generic-list/generic-list';
 import { MoviesService } from '../movies.service';
 @Component({
   selector: 'app-movies-list',
-  imports: [GenericList, MatButtonModule, MatIconModule, RouterLink],
+  imports: [
+    GenericList,
+    MatButtonModule,
+    MatIconModule,
+    RouterLink,
+    Authorized,
+  ],
   templateUrl: './movies-list.html',
   styleUrl: './movies-list.css',
 })
