@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
+import { CreateEntity } from '../../shared/components/create-entity/create-entity';
+import { CRUD_SERVICE_TOKEN } from '../../shared/providers/providers';
 import { ActorsForm } from '../actors-form/actors-form';
-import { ActorCreationDTO } from '../actors.models';
+import { ActorsService } from '../actors.service';
 
 @Component({
   selector: 'app-create-actor',
-  imports: [ActorsForm],
+  imports: [CreateEntity],
   templateUrl: './create-actor.html',
   styleUrl: './create-actor.css',
+  providers: [{ provide: CRUD_SERVICE_TOKEN, useClass: ActorsService }],
 })
 export class CreateActor {
-  saveChanges(actor: ActorCreationDTO) {
-    console.log('creating the actor', actor);
-  }
+  actorsForm = ActorsForm;
 }

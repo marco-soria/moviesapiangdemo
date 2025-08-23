@@ -1,20 +1,16 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { CreateEntity } from '../../shared/components/create-entity/create-entity';
+import { CRUD_SERVICE_TOKEN } from '../../shared/providers/providers';
 import { GenresForm } from '../genres-form/genres-form';
-import { GenreCreationDTO } from '../genres.models';
+import { GenresService } from '../genres.service';
 
 @Component({
   selector: 'app-create-genre',
-  imports: [GenresForm],
+  imports: [CreateEntity],
   templateUrl: './create-genre.html',
   styleUrl: './create-genre.css',
+  providers: [{ provide: CRUD_SERVICE_TOKEN, useClass: GenresService }],
 })
 export class CreateGenre {
-  router = inject(Router);
-
-  saveChanges(genre: GenreCreationDTO) {
-    // .. save changes
-    console.log(genre);
-    this.router.navigate(['/genres']);
-  }
+  genresForm = GenresForm;
 }

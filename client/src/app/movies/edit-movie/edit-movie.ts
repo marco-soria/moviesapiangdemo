@@ -1,54 +1,78 @@
-import { Component, Input, numberAttribute } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  numberAttribute,
+  OnInit,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { Loading } from '../../shared/components/loading/loading';
 import { MultipleSelectorDTO } from '../../shared/components/multiple-selector/MultipleSelectorDTO';
+import { extractErrors } from '../../shared/functions/extractErrors';
 import { MoviesForm } from '../movies-form/movies-form';
 import { MovieCreationDTO, MovieDTO } from '../movies.models';
+import { MoviesService } from '../movies.service';
 import { ActorAutoCompleteDTO } from './../../actors/actors.models';
 
 @Component({
   selector: 'app-edit-movie',
-  imports: [MoviesForm],
+  imports: [MoviesForm, Loading],
   templateUrl: './edit-movie.html',
   styleUrl: './edit-movie.css',
 })
-export class EditMovie {
+export class EditMovie implements OnInit {
   @Input({ transform: numberAttribute })
   id!: number;
+  model?: MovieDTO;
+  nonSelectedGenres: MultipleSelectorDTO[] = [];
+  selectedGenres: MultipleSelectorDTO[] = [];
+  nonSelectedTheaters: MultipleSelectorDTO[] = [];
+  selectedTheaters: MultipleSelectorDTO[] = [];
+  selectedActors: ActorAutoCompleteDTO[] = [];
+  errors: string[] = [];
 
-  model: MovieDTO = {
-    id: 1,
-    title: 'Spider-Man: Far From Home',
-    releaseDate: new Date('2019-07-22'),
-    trailer: 'abcd',
-    poster:
-      'https://upload.wikimedia.org/wikipedia/en/b/bd/Spider-Man_Far_From_Home_poster.jpg',
-  };
+  moviesService = inject(MoviesService);
+  router = inject(Router);
 
-  nonSelectedGenres: MultipleSelectorDTO[] = [
-    { key: 1, description: 'Drama' },
-    { key: 3, description: 'Comedy' },
-  ];
+  ngOnInit(): void {
+    this.moviesService.putGet(this.id).subscribe((response) => {
+      this.model = response.movie;
 
-  selectedGenres: MultipleSelectorDTO[] = [{ key: 2, description: 'Action' }];
+      this.selectedGenres = response.selectedGenres.map((genre) => {
+        return <MultipleSelectorDTO>{ key: genre.id, description: genre.name };
+      });
 
-  nonSelectedTheaters: MultipleSelectorDTO[] = [
-    { key: 1, description: 'Acropolis' },
-  ];
+      this.nonSelectedGenres = response.nonSelectedGenres.map((genre) => {
+        return <MultipleSelectorDTO>{ key: genre.id, description: genre.name };
+      });
 
-  selectedTheaters: MultipleSelectorDTO[] = [
-    { key: 2, description: 'Agora Mall' },
-  ];
+      this.selectedTheaters = response.selectedTheaters.map((theater) => {
+        return <MultipleSelectorDTO>{
+          key: theater.id,
+          description: theater.name,
+        };
+      });
 
-  selectedActors: ActorAutoCompleteDTO[] = [
-    {
-      id: 2,
-      name: 'Tom Hanks',
-      character: 'Forrest Gump',
-      picture:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Tom_Hanks_TIFF_2019.jpg/220px-Tom_Hanks_TIFF_2019.jpg',
-    },
-  ];
+      this.nonSelectedTheaters = response.nonSelectedTheaters.map((theater) => {
+        return <MultipleSelectorDTO>{
+          key: theater.id,
+          description: theater.name,
+        };
+      });
+
+      this.selectedActors = response.actors;
+    });
+  }
 
   saveChanges(movie: MovieCreationDTO) {
-    console.log('editing the movie', movie);
+    this.moviesService.update(this.id, movie).subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        const errors = extractErrors(err);
+        this.errors = errors;
+      },
+    });
   }
 }

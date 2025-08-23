@@ -1,11 +1,13 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
+import Swal from 'sweetalert2';
 import { GenericList } from '../../shared/components/generic-list/generic-list';
-
+import { MoviesService } from '../movies.service';
 @Component({
   selector: 'app-movies-list',
-  imports: [GenericList, MatButtonModule, MatIconModule],
+  imports: [GenericList, MatButtonModule, MatIconModule, RouterLink],
   templateUrl: './movies-list.html',
   styleUrl: './movies-list.css',
 })
@@ -13,16 +15,31 @@ export class MoviesList {
   @Input({ required: true })
   movies!: any[];
 
-  addMovie() {
-    this.movies?.push({
-      title: 'Inception',
-      releaseDate: new Date('2012-07-03'),
-      price: 500,
+  @Output()
+  deleted = new EventEmitter<void>();
+
+  moviesService = inject(MoviesService);
+
+  confirmDelete(id: number) {
+    Swal.fire({
+      title: 'Confirmation',
+      text: 'Are you sure you want to delete this movie?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.delete(id);
+      }
     });
   }
 
-  removeMovie(movie: any) {
-    let index = this.movies.findIndex((m: any) => m.title === movie.title);
-    this.movies.splice(index, 1);
+  delete(id: number) {
+    this.moviesService.delete(id).subscribe(() => {
+      this.deleted.emit();
+      Swal.fire('Deleted!', 'The movie has been deleted.', 'success');
+    });
   }
 }

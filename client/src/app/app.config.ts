@@ -5,9 +5,11 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideSweetAlert2 } from '@sweetalert2/ngx-sweetalert2';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -31,5 +33,7 @@ export const appConfig: ApplicationConfig = {
         monthYearA11yLabel: 'MMMM YYYY',
       },
     }),
+    provideHttpClient(withFetch()),
+    provideSweetAlert2(),
   ],
 };

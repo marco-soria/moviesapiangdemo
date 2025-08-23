@@ -37,19 +37,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 builder.Services.AddSingleton<GeometryFactory>(NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326));
 
-builder.Services.AddAutoMapper(config =>
-{
-    config.ConstructServicesUsing(type =>
-    {
-        if (type == typeof(GeometryFactory))
-        {
-            return NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-        }
-        return Activator.CreateInstance(type);
-    });
-}, typeof(AutoMapperProfiles));
+// builder.Services.AddAutoMapper(config =>
+// {
+//     config.ConstructServicesUsing(type =>
+//     {
+//         if (type == typeof(GeometryFactory))
+//         {
+//             return NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+//         }
+//         return Activator.CreateInstance(type);
+//     });
+// }, typeof(AutoMapperProfiles));
 
-builder.Services.AddTransient<IFileStorage, AzureFileStorage>();
+builder.Services.AddSingleton(provider => new MapperConfiguration(config =>
+{
+    var geometryFactory = provider.GetRequiredService<GeometryFactory>();
+    config.AddProfile(new AutoMapperProfiles(geometryFactory));
+}).CreateMapper());
+
+builder.Services.AddTransient<IFileStorage, LocalFileStorage>();
 
 
 var app = builder.Build();
